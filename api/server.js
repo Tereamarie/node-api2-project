@@ -7,7 +7,7 @@ const server = express();
 server.use(express.json());
 
 server.get('/', (req, res) => {
-    res.send(`Hello from Server.js`);
+    res.send(`Hello from Funky Town`);
 });
 
 server.use('/api/posts', postsRouter);

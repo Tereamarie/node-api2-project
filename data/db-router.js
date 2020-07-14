@@ -1,8 +1,11 @@
-const express - require('express');
+const express = require('express');
+
 const Posts = require('./db');
+
 const router = express.Router();
 
 router.use(express.json());
+let posts = [];
 
 //GET requests
 
@@ -16,6 +19,7 @@ router.get('/', (req, res) => {
         res.status(500).json({ error: "The posts information could not be retrieved." })
     });
 });
+
 router.get('/:id', (req, res) => {
     const id = req.params.id;
     Posts.findById(id)
@@ -28,6 +32,7 @@ router.get('/:id', (req, res) => {
         res.status(500).json({ error: "The post information could not be retrieved." })
     });
 });
+
 router.get('/:id/comments', (req, res) => {
     Posts.findPostComments(req.params.id)
     .then(comment => {
@@ -38,6 +43,7 @@ router.get('/:id/comments', (req, res) => {
         res.status(500).json({ error: "There was an error while saving the comment to the database" })
     })
 })
+
 //POST requests
 
 router.post('/', (req, res) => {
@@ -89,3 +95,51 @@ router.post("/:id/comments", (req, res) => {
     .json({ errorMessage: "Please provide text for the comment." });
 }
 });
+
+//DELETE request
+
+router.delete('/:id', (req, res) => {
+    Posts.remove(req.params.id)
+    .then(count => {
+        count > 0 ? res.status(200).json({ message: 'post successfully deleted' }) : res.status(404).json({ message: "The post with the specified ID does not exist." });
+    })
+    .catch(error => {
+        console.log(error);
+        res.status(500).json({ error: "The post could not be removed" })
+    })
+})
+
+//PUT request
+
+router.put('/:id', (req, res) => {
+    const updates = req.body;
+    const id = req.params.id;
+    Posts.findById(id)
+    .then(changes => {
+        if( changes ) {
+            res.status(201).json(changes);
+        } else {
+            res.status(404).json({ message: "The post with the specified ID does not exist." })
+        };
+        if (!updates.text) {
+            Posts.update(id, updates)
+            .then(user => {
+                res.status(201).json(user);
+            })
+            .catch(err => {
+                console.log('error on PUT/:id', err);
+                res.status(400).json({ errorMessage: "Please provide text for the comment."});
+            });
+        } else if (!user.id) {
+            res.status(404).json({ message: "The post with the specified ID does not exist." });
+        } else {
+            res.status(400).json({ errorMessage: "Please provide text for the comment."});
+        }
+    })
+    .catch(error => {
+        console.log('error from PUT/:id', error);
+        res.status(500).json({ error: "There was an error while saving the comment to the database" })
+    })
+})
+
+module.exports = router;
